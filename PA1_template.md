@@ -1,9 +1,4 @@
----
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
----
+# Reproducible Research: Peer Assessment 1
 
 ## Loading and preprocessing the data
 1. Set the working Directory where you wish to copy the data. 
@@ -12,11 +7,27 @@ output:
 4. Load the Data into a dataframe.
 5. Kindly change the *method attribute* in download.file method, if you are not using windows machine. you can either delete it  
     or use *method="curl"*
-6. Please set working directory to your preferred directory.
     
-```{r}
+
+```r
 library(dplyr)
-setwd("working directory")
+```
+
+```
+## 
+## Attaching package: 'dplyr'
+## 
+## The following objects are masked from 'package:stats':
+## 
+##     filter, lag
+## 
+## The following objects are masked from 'package:base':
+## 
+##     intersect, setdiff, setequal, union
+```
+
+```r
+setwd("C:\\Arora\\RProgramming\\Reproduceble")
 file_url<-"https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip"
 download.file(file_url,destfile = "activity.zip",method = "wininet")
 unzip("activity.zip")
@@ -29,32 +40,70 @@ dfactAll$date <- as.Date(dfactAll$date,"%Y-%m-%d")
 -   Grouping the rest of Data on Date and then Summing up the steps for all the intervals per day.
 -   Drawing histogram with total number of steps per day as base.
 
-```{r}
+
+```r
 dfact <- dfactAll[!is.na(dfactAll$steps),]
 dfact_gdate <-  group_by(dfact, date)
 dfact_sdate <-  summarise(dfact_gdate,sum(steps))
 colnames(dfact_sdate) <- c("date","steps")
 hist(dfact_sdate$steps, main = "Total steps per day")
-
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-2-1.png) 
 ## What is the average daily activity pattern?
 -   Displaying the median of Total Number of steps taken per day
 -   Displaying the Mean of Total Number of steps taken per day
 -   Drawing a graph with mean number of steps on basis of per interval
 
-```{r}
 
+```r
 medStepsDay<-median(dfact_sdate$steps)
 print(c("Median steps per day with NA Excluded = ",medStepsDay))
+```
+
+```
+## [1] "Median steps per day with NA Excluded = "
+## [2] "10765"
+```
+
+```r
 print
+```
+
+```
+## function (x, ...) 
+## UseMethod("print")
+## <bytecode: 0x0000000013d7a5e8>
+## <environment: namespace:base>
+```
+
+```r
 meanStepsDay <- mean((dfact_sdate$steps))
 print(c("Mean steps per day with NA Excluded = ",meanStepsDay))
+```
+
+```
+## [1] "Mean steps per day with NA Excluded = "
+## [2] "10766.1886792453"
+```
+
+```r
 dfact_ginterval<-group_by(dfact, interval)
 dfact_minterval <- summarise(dfact_ginterval,mean(steps))
 colnames(dfact_minterval) <- c("interval","Meansteps")
 with(dfact_minterval, plot(interval, Meansteps,type = "l"))
+```
+
+![](PA1_template_files/figure-html/unnamed-chunk-3-1.png) 
+
+```r
 dfactMaxInt<-dfact_minterval$interval[dfact_minterval$Meansteps==max(dfact_minterval$Meansteps)]
 print(c("Interval with maximum number of average steps is : ",dfactMaxInt))
+```
+
+```
+## [1] "Interval with maximum number of average steps is : "
+## [2] "835"
 ```
 
 ## Imputing missing values
@@ -64,7 +113,8 @@ print(c("Interval with maximum number of average steps is : ",dfactMaxInt))
 - There is no difference in mean steps between before and after filling missing values.
 - There is slight difference in median steps between before and after filling median values.
 
-```{r}
+
+```r
 dfactall1<-merge(dfactAll,dfact_minterval,by.x="interval",by.y="interval")
 dfactall1$steps<-ifelse(is.na(dfactall1$steps),dfactall1$Meansteps,dfactall1$steps)
 dfactall1<- dfactall1[,1:3]
@@ -72,10 +122,28 @@ dfactall1_gd<- group_by(dfactall1,date)
 dfactall1_sd<- summarise(dfactall1_gd, sum(steps))
 colnames(dfactall1_sd) <- c("date","steps")
 hist(dfactall1_sd$steps)
+```
+
+![](PA1_template_files/figure-html/unnamed-chunk-4-1.png) 
+
+```r
 dfactall1_meand <- mean(dfactall1_sd$steps)
 print(c("Mean number of steps per interval after filling in missing values = ", dfactall1_meand))
+```
+
+```
+## [1] "Mean number of steps per interval after filling in missing values = "
+## [2] "10766.1886792453"
+```
+
+```r
 dfactall1_medid <- median(dfactall1_sd$steps)
 print(c("Median number of steps per interval after filling in missing values = ", dfactall1_medid))
+```
+
+```
+## [1] "Median number of steps per interval after filling in missing values = "
+## [2] "10766.1886792453"
 ```
 
 ## Are there differences in activity patterns between weekdays and weekends?
@@ -84,7 +152,8 @@ print(c("Median number of steps per interval after filling in missing values = "
     marking it as weekday.
 - printing plot using xyplot for mean number of steps taken per interval in 2 panels, one for each *weekend* and *weekday*.
 - By Comparing We can deduce that on average number of steps taken on weekend are more comared to weekday.
-```{r}
+
+```r
 library(lubridate)
 library(lattice)
 dfactall1$wDay <- factor((wday(dfactall1$date) %in% 1:5), levels=c(FALSE, TRUE), labels=c('weekend', 'weekday'))
@@ -94,3 +163,5 @@ colnames(dfactall1_miw) <- c("interval","wDay","steps")
 p<-xyplot(steps~interval|wDay, data =dfactall1_miw, type="l",ylab="Number of steps", layout = c(1,2))
 print(p)
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-5-1.png) 
